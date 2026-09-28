@@ -1,0 +1,638 @@
+<!-- site: pinkys-detroit-dogs -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pinky's Detroit Dogs | Real Detroit Coney Dogs in Ocala Forest, FL</title>
+<meta name="description" content="Pinky's Detroit Dogs — real Detroit-style Coney dogs from a hot dog stand on the corner by the Winn-Dixie in Ocala Forest, FL.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='45' fill='%23FFD400'/%3E%3Cpath d='M50,50 L95,25 A45,45 0 1,0 95,75 Z' fill='%23000'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --black:#000000;
+    --pink:#ff3ea5;
+    --pink-soft:#ff8fce;
+    --yellow:#ffd400;
+    --blue:#2323ff;
+    --cyan:#00e5ff;
+    --red:#ff2b2b;
+    --orange:#ffa83e;
+    --green:#39ff6a;
+    --panel:#0a0a1a;
+    --panel-border:#1e1e55;
+    --font-arcade:'Press Start 2P', monospace;
+    --font-body:'VT323', monospace;
+  }
+
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth; scroll-padding-top:56px;}
+  body{
+    margin:0;
+    background:#000;
+    color:#f2f2f2;
+    font-family:var(--font-body);
+    font-size:1.25rem;
+    line-height:1.5;
+    overflow-x:hidden;
+    position:relative;
+  }
+  h1,h2,h3,.font-arcade{font-family:var(--font-arcade);}
+  a{color:inherit;}
+  button{font-family:var(--font-arcade);}
+  img,svg{display:block;max-width:100%;}
+
+  /* ---------- Maze grid background ---------- */
+  .maze-bg{
+    position:fixed;
+    inset:0;
+    z-index:-3;
+    background-color:#000;
+    background-image:
+      repeating-linear-gradient(90deg, rgba(35,35,255,0.35) 0 2px, transparent 2px 44px),
+      repeating-linear-gradient(0deg, rgba(35,35,255,0.35) 0 2px, transparent 2px 44px);
+    background-position:center;
+    opacity:0.55;
+    pointer-events:none;
+  }
+  .maze-vignette{
+    position:fixed;
+    inset:0;
+    z-index:-2;
+    pointer-events:none;
+    background:radial-gradient(ellipse at center, transparent 40%, #000 92%);
+  }
+
+  /* ---------- Floating background ghosts ---------- */
+  .bg-ghosts{position:fixed; inset:0; z-index:-1; overflow:hidden; pointer-events:none;}
+  .bg-ghost{position:absolute; width:64px; opacity:0.28; filter:blur(0.3px);}
+  .bg-ghost svg{width:100%; height:auto;}
+  .bg-ghost.g1{top:8%; left:6%; animation:floaty 9s ease-in-out infinite;}
+  .bg-ghost.g2{top:18%; right:8%; width:46px; animation:floaty 7s ease-in-out infinite -2s;}
+  .bg-ghost.g3{top:55%; left:4%; width:52px; animation:floaty 10s ease-in-out infinite -4s;}
+  .bg-ghost.g4{top:70%; right:6%; width:58px; animation:floaty 8s ease-in-out infinite -1s;}
+  .bg-ghost.g5{top:38%; left:48%; width:40px; opacity:0.16; animation:floaty 11s ease-in-out infinite -6s;}
+  @keyframes floaty{
+    0%,100%{ transform:translate(0,0) rotate(0deg); }
+    25%{ transform:translate(10px,-14px) rotate(3deg); }
+    50%{ transform:translate(-6px,10px) rotate(-2deg); }
+    75%{ transform:translate(-12px,-6px) rotate(2deg); }
+  }
+
+  /* ---------- Top bar ---------- */
+  .topbar{
+    position:fixed; top:0; left:0; right:0; z-index:50;
+    display:flex; align-items:center; justify-content:space-between;
+    padding:0.6rem 1rem;
+    background:rgba(0,0,0,0.75);
+    border-bottom:2px solid var(--blue);
+    box-shadow:0 0 12px rgba(35,35,255,0.5);
+    backdrop-filter:blur(2px);
+  }
+  .topbar-logo{
+    font-family:var(--font-arcade);
+    font-size:0.6rem;
+    color:var(--yellow);
+    letter-spacing:1px;
+    white-space:nowrap;
+  }
+  .topbar-nav{display:flex; gap:0.9rem;}
+  .topbar-nav a{
+    font-family:var(--font-arcade);
+    font-size:0.55rem;
+    text-decoration:none;
+    color:var(--cyan);
+    padding:0.3rem 0.2rem;
+  }
+  .topbar-nav a:hover, .topbar-nav a:focus-visible{color:var(--pink); outline:none;}
+  @media (max-width:480px){
+    .topbar-logo{display:none;}
+    .topbar-nav{gap:0.7rem; margin:0 auto;}
+  }
+
+  /* ---------- Focus visibility ---------- */
+  a:focus-visible, button:focus-visible{
+    outline:3px solid var(--yellow);
+    outline-offset:3px;
+  }
+
+  /* ---------- Banner ---------- */
+  .banner{
+    min-height:100svh;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+    padding:5.5rem 1.2rem 3rem;
+    position:relative;
+  }
+  .banner-ghost-wrap{
+    width:150px;
+    margin:0 auto 1.2rem;
+    filter:drop-shadow(0 0 18px rgba(255,62,165,0.65));
+  }
+  .banner-ghost-wrap svg{width:100%;}
+  .title{
+    font-size:clamp(1.6rem, 7vw, 3.2rem);
+    color:var(--yellow);
+    line-height:1.35;
+    margin:0 0 1.1rem;
+    text-shadow:
+      0 0 6px rgba(255,212,0,0.8),
+      3px 3px 0 #7a4d00,
+      0 0 30px rgba(255,212,0,0.4);
+  }
+  .tagline{
+    font-family:var(--font-body);
+    font-size:1.4rem;
+    color:var(--cyan);
+    max-width:34rem;
+    margin:0 auto 2.2rem;
+  }
+  .insert-coin{
+    display:inline-block;
+    font-family:var(--font-arcade);
+    font-size:clamp(0.7rem, 2.3vw, 0.95rem);
+    color:#000;
+    background:var(--yellow);
+    text-decoration:none;
+    padding:1rem 1.4rem;
+    border:3px solid #fff2a8;
+    border-radius:6px;
+    box-shadow:0 0 0 3px #000, 0 0 22px rgba(255,212,0,0.9);
+    animation:coinFlash 1.4s steps(2, jump-none) infinite;
+    letter-spacing:1px;
+  }
+  .insert-coin:hover, .insert-coin:focus-visible{
+    background:var(--pink);
+    color:#fff;
+  }
+  @keyframes coinFlash{
+    0%,100%{ box-shadow:0 0 0 3px #000, 0 0 22px rgba(255,212,0,0.9); }
+    50%{ box-shadow:0 0 0 3px #000, 0 0 6px rgba(255,212,0,0.3); }
+  }
+  .press-start{
+    margin-top:1.4rem;
+    font-family:var(--font-arcade);
+    font-size:0.7rem;
+    color:var(--pink-soft);
+    animation:blinkText 1.1s steps(1) infinite;
+  }
+  @keyframes blinkText{
+    0%,49%{opacity:1;}
+    50%,100%{opacity:0;}
+  }
+
+  /* ---------- Section base ---------- */
+  .section{
+    position:relative;
+    padding:4rem 1.2rem;
+    max-width:1100px;
+    margin:0 auto;
+  }
+  .high-score-heading{
+    text-align:center;
+    font-size:clamp(1rem, 3.6vw, 1.6rem);
+    color:var(--yellow);
+    margin:0 0 2.4rem;
+    text-shadow:2px 2px 0 #663d00, 0 0 14px rgba(255,212,0,0.5);
+  }
+  .high-score-heading::before{
+    content:"1UP";
+    display:block;
+    font-size:0.55rem;
+    color:var(--pink);
+    margin-bottom:0.6rem;
+    letter-spacing:2px;
+  }
+
+  /* ---------- Power pellet row ---------- */
+  .pellet-row{
+    display:flex;
+    justify-content:center;
+    gap:1.4rem;
+    margin:0.5rem 0 2.6rem;
+  }
+  .pellet{
+    width:12px; height:12px; border-radius:50%;
+    background:var(--yellow);
+    box-shadow:0 0 10px rgba(255,212,0,0.9);
+    animation:pulse 1.3s ease-in-out infinite;
+  }
+  .pellet:nth-child(2){animation-delay:0.15s;}
+  .pellet:nth-child(3){animation-delay:0.3s;}
+  .pellet:nth-child(4){animation-delay:0.45s;}
+  .pellet:nth-child(5){animation-delay:0.6s;}
+  @keyframes pulse{
+    0%,100%{transform:scale(1); opacity:1;}
+    50%{transform:scale(1.5); opacity:0.55;}
+  }
+
+  /* ---------- Chomp strip ---------- */
+  .chomp-strip{
+    position:relative;
+    padding:2.2rem 0;
+    background:linear-gradient(180deg, rgba(35,35,255,0.08), transparent);
+    border-top:2px solid var(--panel-border);
+    border-bottom:2px solid var(--panel-border);
+    overflow:hidden;
+  }
+  .dots-track{
+    position:relative;
+    height:56px;
+    max-width:1100px;
+    margin:0 auto;
+    padding:0 1.2rem;
+  }
+  .dot{
+    position:absolute;
+    top:50%;
+    width:12px; height:12px;
+    margin-top:-6px;
+    border-radius:50%;
+    background:var(--yellow);
+    box-shadow:0 0 8px rgba(255,212,0,0.8);
+    transition:opacity 0.12s linear;
+  }
+  .pacman-mover{
+    position:absolute;
+    top:50%;
+    left:0;
+    width:56px; height:56px;
+    margin-top:-28px;
+    z-index:5;
+    filter:drop-shadow(0 0 10px rgba(255,212,0,0.85));
+  }
+  .pac-top, .pac-bottom{
+    position:absolute;
+    left:0;
+    width:56px; height:28px;
+    background:var(--yellow);
+  }
+  .pac-top{
+    top:0;
+    border-top-left-radius:28px;
+    border-top-right-radius:28px;
+    transform-origin:50% 100%;
+    animation:pacTop 0.32s ease-in-out infinite alternate;
+  }
+  .pac-bottom{
+    top:28px;
+    border-bottom-left-radius:28px;
+    border-bottom-right-radius:28px;
+    transform-origin:50% 0%;
+    animation:pacBottom 0.32s ease-in-out infinite alternate;
+  }
+  @keyframes pacTop{ from{transform:rotate(0deg);} to{transform:rotate(-38deg);} }
+  @keyframes pacBottom{ from{transform:rotate(0deg);} to{transform:rotate(38deg);} }
+
+  /* ---------- Coney section ---------- */
+  .coney-content{
+    display:grid;
+    grid-template-columns:1fr;
+    gap:2.4rem;
+    align-items:center;
+  }
+  @media (min-width:760px){
+    .coney-content{grid-template-columns:1.1fr 0.9fr;}
+  }
+  .coney-text p{font-size:1.35rem; margin:0 0 1rem;}
+  .coney-list{list-style:none; margin:1.2rem 0 0; padding:0; display:grid; gap:0.7rem;}
+  .coney-list li{
+    display:flex; align-items:center; gap:0.7rem;
+    font-size:1.25rem;
+    background:var(--panel);
+    border:1px solid var(--panel-border);
+    border-radius:6px;
+    padding:0.6rem 0.8rem;
+  }
+  .coney-list li .bit{
+    width:10px; height:10px; flex:0 0 auto;
+    background:var(--yellow);
+  }
+  .coney-diagram{
+    background:var(--panel);
+    border:2px solid var(--panel-border);
+    border-radius:10px;
+    padding:1.4rem;
+    display:flex;
+    justify-content:center;
+  }
+  .coney-diagram svg{width:100%; max-width:280px;}
+
+  /* ---------- Menu ---------- */
+  .menu-grid{
+    display:grid;
+    grid-template-columns:1fr;
+    gap:1.3rem;
+  }
+  @media (min-width:620px){
+    .menu-grid{grid-template-columns:1fr 1fr;}
+  }
+  @media (min-width:960px){
+    .menu-grid{grid-template-columns:1fr 1fr 1fr;}
+  }
+  .menu-card{
+    background:var(--panel);
+    border:2px solid var(--panel-border);
+    border-radius:10px;
+    padding:1.2rem 1.2rem 1.4rem;
+    position:relative;
+    transition:transform 0.15s ease, border-color 0.15s ease;
+  }
+  .menu-card:hover{
+    transform:translateY(-4px);
+    border-color:var(--ghost-color, var(--yellow));
+  }
+  .menu-card .ghost-icon{width:34px; margin-bottom:0.6rem;}
+  .menu-card h3{
+    font-size:0.85rem;
+    color:var(--ghost-color, var(--yellow));
+    margin:0 0 0.6rem;
+    line-height:1.4;
+  }
+  .menu-card p{
+    font-size:1.2rem;
+    margin:0 0 1rem;
+    color:#d8d8e6;
+  }
+  .menu-card .price{
+    font-family:var(--font-arcade);
+    font-size:1rem;
+    color:var(--yellow);
+  }
+  .sides-row{
+    margin-top:1.6rem;
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:1rem;
+    max-width:520px;
+  }
+  .sides-row .menu-card{padding:1rem;}
+  .sides-row h3{font-size:0.75rem;}
+
+  /* ---------- Find us ---------- */
+  .find-us{text-align:center;}
+  .find-us .location-line{
+    font-size:1.5rem;
+    color:var(--cyan);
+    margin:0 0 0.5rem;
+  }
+  .find-us .note{
+    font-size:1.1rem;
+    color:#9a9ac0;
+    margin:0 0 2rem;
+  }
+  .directions-btn{
+    display:inline-block;
+    font-family:var(--font-arcade);
+    font-size:0.85rem;
+    text-decoration:none;
+    color:#000;
+    background:var(--cyan);
+    padding:1rem 1.6rem;
+    border-radius:6px;
+    border:3px solid #b6fbff;
+    box-shadow:0 0 18px rgba(0,229,255,0.7);
+  }
+  .directions-btn:hover, .directions-btn:focus-visible{
+    background:var(--pink);
+    color:#fff;
+  }
+
+  /* ---------- Footer ---------- */
+  footer{
+    text-align:center;
+    padding:2.4rem 1.2rem 3rem;
+    border-top:2px solid var(--panel-border);
+    font-size:1.05rem;
+    color:#8888aa;
+  }
+  footer .footer-sub{color:var(--pink-soft); margin-top:0.4rem;}
+
+  @media (prefers-reduced-motion: reduce){
+    .bg-ghost, .insert-coin, .press-start, .pellet, .pac-top, .pac-bottom{
+      animation:none !important;
+    }
+  }
+</style>
+</head>
+<body>
+
+<div class="maze-bg" aria-hidden="true"></div>
+<div class="maze-vignette" aria-hidden="true"></div>
+<div class="bg-ghosts" aria-hidden="true">
+  <div class="bg-ghost g1" data-ghost="red"></div>
+  <div class="bg-ghost g2" data-ghost="cyan"></div>
+  <div class="bg-ghost g3" data-ghost="orange"></div>
+  <div class="bg-ghost g4" data-ghost="pink"></div>
+  <div class="bg-ghost g5" data-ghost="green"></div>
+</div>
+
+<header class="topbar">
+  <span class="topbar-logo">PINKY'S DETROIT DOGS</span>
+  <nav class="topbar-nav">
+    <a href="#coney">CONEY?</a>
+    <a href="#menu">MENU</a>
+    <a href="#find-us">FIND US</a>
+  </nav>
+</header>
+
+<section class="banner" id="top">
+  <div class="banner-ghost-wrap" data-ghost="pink" data-eyes="true"></div>
+  <h1 class="title">PINKY'S<br>DETROIT DOGS</h1>
+  <p class="tagline">Real Detroit-style Coney dogs, served hot from our stand in Ocala Forest, FL.</p>
+  <a href="#menu" class="insert-coin">▶ INSERT COIN TO SEE MENU</a>
+  <p class="press-start">PRESS START</p>
+</section>
+
+<div class="chomp-strip">
+  <div class="dots-track" id="dotsTrack">
+    <div class="pacman-mover" id="pacmanMover">
+      <div class="pac-top"></div>
+      <div class="pac-bottom"></div>
+    </div>
+  </div>
+</div>
+
+<section class="section coney" id="coney">
+  <h2 class="high-score-heading">WHAT'S A CONEY DOG?</h2>
+  <div class="pellet-row" aria-hidden="true">
+    <div class="pellet"></div><div class="pellet"></div><div class="pellet"></div><div class="pellet"></div><div class="pellet"></div>
+  </div>
+  <div class="coney-content">
+    <div class="coney-text">
+      <p>If you didn't grow up near Detroit, chances are nobody's ever handed you a real Coney dog. Down here in Florida, we're fixing that.</p>
+      <p>A true Detroit Coney is simple, and it's perfect: a hot dog, topped with beefy chili (no beans), a stripe of bright yellow mustard, and a scatter of diced onions. That's it. No fuss, no gimmicks — just the combo Detroit's been perfecting for over a century.</p>
+      <ul class="coney-list">
+        <li><span class="bit"></span> Hot dog</li>
+        <li><span class="bit"></span> Beef chili (no beans)</li>
+        <li><span class="bit"></span> Yellow mustard</li>
+        <li><span class="bit"></span> Diced onions</li>
+      </ul>
+    </div>
+    <div class="coney-diagram">
+      <svg viewBox="0 0 200 160" role="img" aria-label="Cross-section illustration of a Coney dog: bun, hot dog, chili, mustard and onions">
+        <rect x="10" y="90" width="180" height="45" rx="22" fill="#e8b06b"/>
+        <rect x="10" y="90" width="180" height="45" rx="22" fill="none" stroke="#a9702f" stroke-width="3"/>
+        <rect x="20" y="72" width="160" height="34" rx="17" fill="#c4443a"/>
+        <path d="M20,64 q80,-26 160,0 v14 q-80,-22 -160,0 z" fill="#7a3418"/>
+        <path d="M25,60 q75,-16 150,0" stroke="#ffd400" stroke-width="5" fill="none" stroke-linecap="round"/>
+        <path d="M30,54 q70,-14 140,0" stroke="#ffd400" stroke-width="5" fill="none" stroke-linecap="round"/>
+        <circle cx="55" cy="70" r="4" fill="#fff5e6"/>
+        <circle cx="80" cy="66" r="4" fill="#fff5e6"/>
+        <circle cx="108" cy="68" r="4" fill="#fff5e6"/>
+        <circle cx="135" cy="65" r="4" fill="#fff5e6"/>
+        <circle cx="160" cy="69" r="4" fill="#fff5e6"/>
+      </svg>
+    </div>
+  </div>
+</section>
+
+<section class="section menu" id="menu">
+  <h2 class="high-score-heading">THE MENU</h2>
+  <div class="pellet-row" aria-hidden="true">
+    <div class="pellet"></div><div class="pellet"></div><div class="pellet"></div><div class="pellet"></div><div class="pellet"></div>
+  </div>
+
+  <div class="menu-grid">
+    <div class="menu-card" style="--ghost-color:var(--pink)">
+      <div class="ghost-icon" data-ghost="pink"></div>
+      <h3>THE PINKY SPECIAL</h3>
+      <p>Our classic Coney dog: beef chili, yellow mustard, diced onions.</p>
+      <span class="price">$10.00</span>
+    </div>
+    <div class="menu-card" style="--ghost-color:var(--red)">
+      <div class="ghost-icon" data-ghost="red"></div>
+      <h3>THE BLINKY BURGER</h3>
+      <p>Beef patty, cheese, lettuce, tomato, secret sauce.</p>
+      <span class="price">$9.00</span>
+    </div>
+    <div class="menu-card" style="--ghost-color:var(--cyan)">
+      <div class="ghost-icon" data-ghost="cyan"></div>
+      <h3>THE INKY WRAP</h3>
+      <p>Hot dog in a soft tortilla with all the fixings.</p>
+      <span class="price">$7.50</span>
+    </div>
+    <div class="menu-card" style="--ghost-color:var(--orange)">
+      <div class="ghost-icon" data-ghost="orange"></div>
+      <h3>THE CLYDE CHEESE DOG</h3>
+      <p>Melted cheddar and jalapenos.</p>
+      <span class="price">$9.50</span>
+    </div>
+    <div class="menu-card" style="--ghost-color:var(--green)">
+      <div class="ghost-icon" data-ghost="green"></div>
+      <h3>THE SUE SPECIAL</h3>
+      <p>Sauteed onions, peppers, garlic sauce.</p>
+      <span class="price">$8.00</span>
+    </div>
+    <div class="menu-card" style="--ghost-color:var(--pink-soft)">
+      <div class="ghost-icon" data-ghost="pink"></div>
+      <h3>THE PINKY SUB</h3>
+      <p>Ham, salami, provolone, Italian dressing.</p>
+      <span class="price">$9.50</span>
+    </div>
+  </div>
+
+  <div class="sides-row">
+    <div class="menu-card" style="--ghost-color:var(--yellow)">
+      <h3>CHIPS</h3>
+      <span class="price">$2.50</span>
+    </div>
+    <div class="menu-card" style="--ghost-color:var(--blue)">
+      <h3>CANNED SODA</h3>
+      <span class="price">$1.00</span>
+    </div>
+  </div>
+</section>
+
+<section class="section find-us" id="find-us">
+  <h2 class="high-score-heading">FIND US</h2>
+  <p class="location-line">On the corner by the Winn-Dixie — Ocala Forest, FL</p>
+  <p class="note">Hours coming soon — just follow the smell of chili.</p>
+  <a class="directions-btn" href="https://www.google.com/maps/search/?api=1&query=Winn-Dixie+Ocala+Forest+FL" target="_blank" rel="noopener">GET DIRECTIONS</a>
+</section>
+
+<footer>
+  <p>Pinky's Detroit Dogs — Ocala Forest, FL</p>
+  <p class="footer-sub">The only real Detroit Coney around, run by a Pac-Man fan.</p>
+</footer>
+
+<script>
+(function(){
+  var COLORS = {
+    pink:'#ff3ea5', red:'#ff2b2b', cyan:'#00e5ff',
+    orange:'#ffa83e', green:'#39ff6a', blue:'#4d7dff'
+  };
+
+  function ghostSVG(color, animated){
+    var eyeAnim = animated
+      ? '<animate attributeName="ry" values="11;11;11;1;11;11" keyTimes="0;0.42;0.46;0.5;0.54;1" dur="4.2s" repeatCount="indefinite"/>'
+      : '';
+    var pupilAnimL = animated
+      ? '<animate attributeName="cx" values="34;42;34" keyTimes="0;0.5;1" dur="5s" repeatCount="indefinite"/>'
+      : '';
+    var pupilAnimR = animated
+      ? '<animate attributeName="cx" values="58;66;58" keyTimes="0;0.5;1" dur="5s" repeatCount="indefinite"/>'
+      : '';
+    return '<svg viewBox="0 0 100 100" role="img" aria-label="Pac-Man style ghost">' +
+      '<path d="M10,90 L10,50 A40,40 0 0,1 90,50 L90,90 L80,80 L70,90 L60,80 L50,90 L40,80 L30,90 L20,80 Z" fill="' + color + '"/>' +
+      '<ellipse cx="38" cy="45" rx="9" ry="11" fill="#fff">' + eyeAnim + '</ellipse>' +
+      '<ellipse cx="62" cy="45" rx="9" ry="11" fill="#fff">' + eyeAnim + '</ellipse>' +
+      '<circle cx="38" cy="47" r="4.5" fill="#1a1a4d">' + pupilAnimL + '</circle>' +
+      '<circle cx="62" cy="47" r="4.5" fill="#1a1a4d">' + pupilAnimR + '</circle>' +
+      '</svg>';
+  }
+
+  document.querySelectorAll('[data-ghost]').forEach(function(el){
+    var color = COLORS[el.getAttribute('data-ghost')] || COLORS.pink;
+    var animated = el.getAttribute('data-eyes') === 'true';
+    el.innerHTML = ghostSVG(color, animated);
+  });
+
+  var track = document.getElementById('dotsTrack');
+  var mover = document.getElementById('pacmanMover');
+  if(track && mover){
+    var DOT_COUNT = 14;
+    var dots = [];
+    for(var i = 0; i < DOT_COUNT; i++){
+      var d = document.createElement('div');
+      d.className = 'dot';
+      d.style.left = ((i + 0.5) / DOT_COUNT * 100) + '%';
+      track.insertBefore(d, mover);
+      dots.push(d);
+    }
+
+    var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    if(!reduceMotion){
+      var DURATION = 6000;
+      var start = null;
+
+      function step(ts){
+        if(start === null) start = ts;
+        var elapsed = (ts - start) % DURATION;
+        var progress = elapsed / DURATION;
+        var trackWidth = track.clientWidth;
+        var pacSize = 56;
+        var x = -pacSize + progress * (trackWidth + pacSize * 2);
+        mover.style.transform = 'translateX(' + x + 'px)';
+
+        for(var j = 0; j < dots.length; j++){
+          var dotX = (j + 0.5) / DOT_COUNT * trackWidth;
+          dots[j].style.opacity = (x + pacSize * 0.6 > dotX) ? '0' : '1';
+        }
+
+        requestAnimationFrame(step);
+      }
+      requestAnimationFrame(step);
+    }
+  }
+})();
+</script>
+
+</body>
+</html>
